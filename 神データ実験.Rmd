@@ -1,0 +1,146 @@
+---
+title: "神になってデータをつくり、それを推定する"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "10/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+
+
+# 母集団データをつくる（単純編）
+
+- 「賛成」を3000個、「反対」を7000個ならべたデータフレームを母集団とする（.data_1）
+- ここからサンプリングを行う。
+
+## 母集団の生成 .data_1
+
+```{r}
+pop.N <- 10000 # 母集団の総数
+sp = 0.3 #注目しているカテゴリの割合
+data.frame(ID=1:pop.N,ANS=c(rep("賛成",pop.N*sp),　
+                            rep("反対",pop.N*(1-sp)))) -> .data_1 # 母集団
+```
+
+## サンリング
+
+```{r}
+size_sample <- 100
+
+sample(x = 1:pop.N,size = size_sample,replace = FALSE) -> sample_num # 重複なしで抽出する行番号
+.data_2[sample_num,] -> .data.sample
+```
+
+
+## 標本から母集団を推定する
+
+### 単純集計(記述統計)
+
+```{r}
+library(magrittr)
+.data.sample %>% xtabs(~ ANS,.) %T>% print %>% prop.table() %>% barplot
+```
+##
+
+```{r}
+
+```
+
+
+
+
+
+# 母集団データを用意する(二項乱数 rbimorn 使用編).data_2
+
+- まず、ある考え方に、賛成、反対の二項データをつくる。
+- 自分は「神」なので、全体の比率を知っている。それは、賛成が、45%、反対が55%というもの。
+- 回答者属性は、あとで追加する。
+- まずは、二項分布をためすためのデータをつくろう。rbinom(生成する個数,size,確率)
+- 10000件。
+
+```{r}
+set.seed(256)
+.d.pop  <- rbinom(10000,1,0.3)
+.d.pop %>% table()
+.d.pop %>% table() %>% prop.table()
+data.frame(ID=1:10000,Ans=.d.pop) -> .data_2
+```
+
+
+# data_2からランダム・サンプリングによって、サンプルを取得する
+
+```{r}
+set.seed(256)
+N <- 50
+res <- NULL
+for(i in 1:500){
+  sample(1:10000,size = 100,replace = FALSE) -> sample_num
+  .data_2 %>% slice(sample_num) %>% count(Ans) %>% select(n) %>% unlist -> res.sample
+  res <- rbind(res,res.sample)
+}
+res[,1] %>% hist
+res[,2] %>% hist
+```
+
+
+# ２元表で母集団を定義する
+
+- N 総数
+- r 行１の割合 行2は、（1-r）
+- c1 行１の列１の割合。列２の割合は、(1-c1)
+- c2 行２の列１の割合。列２の割合は、(1-c2)
+-よって、決めるのは、N、r、c1、c2
+
+```{r}
+N <- 10000
+r <- 0.4 # 行の比率
+c1 <- 0.4 # 第１行１列の比率
+c2 <- 0.4 # 第２行２列の比率
+
+rbind(data.frame(ID = 1:(N*r),Var1=rep("male",N*r),Var2=c(rep("賛成",N*r*c1),rep("反対",N*r*(1-c1)))) ,
+      data.frame(ID = (N*r+1):N,Var1=rep("female",N*(1-r)),Var2=c(rep("賛成",N*(1-r)*c2),rep("反対",N*(1-r)*(1-c2))))) %>% 
+  mutate(Var1=factor(Var1),Var2=factor(Var2))-> .data_3
+summary(.data_3)
+```
+
+
+## サンプリングする
+
+```{r}
+#set.seed(128)
+.data_3[sample(1:N,size=1000,replace = FALSE),] -> sample_3
+summary(sample_3)
+
+sample_3 %>% xtabs(~ Var1 + Var2,.) -> .tbl
+.tbl
+```
+
+```{r}
+res.chisq <- chisq.test(.tbl,correct = FALSE)
+res.chisq
+```
+
+```{r}
+pval <- NULL
+trial <- 20
+for(i in 1:trial){
+  set.seed(i)
+  .data_3[sample(1:N,size=1000,replace = FALSE),] %>% xtabs(~ Var1 + Var2,.) %>% chisq.test(correct = FALSE) -> res.chisq
+  pval <- append(pval,res.chisq$p.value)
+}
+pval %>% hist(breaks=c(seq(0,1,0.025)))
+```
+
+```{r}
+chisq.test(.tbl,correct = FALSE)
+
+```
+

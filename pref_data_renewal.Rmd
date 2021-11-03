@@ -1,0 +1,65 @@
+---
+title: "pref Data renewal"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "10/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(RcmdrMisc)
+```
+
+# データの比較
+
+## テキストのデータを読み込む
+
+```{r}
+.d2005.csv <- read.csv("pref.csv",fileEncoding = "CP932")
+.d2005.csv
+```
+
+## e-statで最新のデータを取得して、pref.csvと同じ形式に整形する
+
+```{r}
+.d2020_0 <- read_excel("e-stat社会人口統計体系2021.xlsx")
+cnames <- names(.d2020_0)
+.d2020_1 <- read_excel("e-stat社会人口統計体系2021.xlsx",skip=3)
+cyear <- names(.d2020_1)
+cyear
+
+.d2020_2 <- read_excel("e-stat社会人口統計体系2021.xlsx",skip=4) # sheet 2を
+names(.d2020_2) <- cnames
+.d2020_2 %>% select(1,2,6,9,12,15,18,21)
+```
+
+```{r}
+.d2020_2 %>% select(1,2,9,12,6,15,18,21) -> .pref
+names(.pref) <- c("jis","pref","tfr","nursery","did","high_edu1","high_edu2","labor_female")
+.pref %>% mutate(high_edu=high_edu1+high_edu2) %>% select(-high_edu1,-high_edu2) %>% select(1:5,7,6) %>% slice(1:47) -> pref2020 # 48,49 行に平均値、標準偏差がついていた。これを削除しておくこと。
+```
+
+```{r}
+pref2020 %>% knitr::kable()
+```
+
+
+
+```{r}
+cor(pref2020[,c(3,4,5)])
+```
+
+```{r eval=FALSE}
+library(ppcor)
+```
+
+```{r}
+partial.cor(pref2020[,c(3,4,5)])
+#ppcor::pcor(pref2020[,c(3,4,5)])
+```
+
