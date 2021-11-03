@@ -1,0 +1,236 @@
+---
+title: "第6回 表を操作する"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    number_sections: yes
+    toc: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+# 表を操作する
+
+## クロス表をスクリプトの中でつくります。
+
+```{r}
+.tbl1 <- matrix(c(481,80,500,119),byrow=TRUE,2,2)
+.tbl1
+```
+
+```{r}
+dimnames(.tbl1) <- list(性別=c("男性","女性"),愛着=c("感じる","感じない"))
+.tbl1
+```
+
+## 周辺度数を求めます（addmargins）
+
+- margin = 1 は行周辺度数
+- margin = 2 は列周辺度数
+- margin 指示なしは？
+- 詳しくは、Helpでみましょう。
+
+```{r}
+addmargins(.tbl1,margin = 1)
+addmargins(.tbl1,margin = 2)
+addmargins(.tbl1)
+```
+
+## 行％を求めます（prop.table()）
+
+```{r}
+prop.table(.tbl1,margin = 1)
+prop.table(.tbl1,margin = 1) * 100
+round(prop.table(.tbl1,margin = 1) * 100, 0)
+```
+
+## カイ二乗値をもとめましょう
+
+帰無仮説、かけますか？（調査仮説/対立仮説も）
+
+```{r}
+.tbl1
+chisq.test(.tbl1) # デフォルトでは、「イエーツの補正」がTRUE
+chisq.test(.tbl1,correct = FALSE) # それをOFFに。教科書の値はこれ。
+```
+
+## chisq.testのresult（結果）を詳しくみます
+
+```{r}
+res.chi <- chisq.test(.tbl1,correct = FALSE)
+str(res.chi)　# str:structure res.chiというオブジェクトの構造をみます。
+```
+
+## 期待値も簡単に！取得できます。
+
+- result res.chisqのなかのexpectedを参照するには、$でつなぎます。
+
+```{r}
+res.chi$expected
+```
+
+## 観測度数 - 期待度数 をつかってカイ二乗値を手計算。
+
+- Rは、ベクトル、行列単位での計算ができるので、以下のようにするとセル単位の操作ができます。（セルごとにチマチマやらなくてもいい...。でも、一度は手計算でやっておいてください。）
+
+```{r}
+.tbl1 - res.chi$expected
+
+(.tbl1 - res.chi$expected) ^2 / res.chi$expected
+
+sum((.tbl1 - res.chi$expected) ^2 / res.chi$expected)
+```
+
+# 他の関連係数
+
+## クラメールのV
+
+```{r}
+sqrt(res.chi$statistic/sum(.tbl1)*(2-1))
+```
+
+## package vcd に関連指数を一度にだす関数がある
+
+```{r}
+library(vcd)
+```
+
+```{r}
+assocstats(.tbl1)
+```
+
+```{r}
+res.assoc <- assocstats(.tbl1)
+
+str(res.assoc)
+```
+
+```{r}
+res.assoc$cramer
+```
+
+## odds 比 （oddの比）
+
+```{r}
+oddsratio(.tbl1)
+oddsratio(.tbl1,log=FALSE)
+```
+
+# CSVを読み込んで、dataframeにする
+
+```{r}
+.Q16_0 <- read.csv("Q16ABC.csv",
+                   colClasses = c("factor","numeric","factor","factor","factor"))
+
+.Q16_0  %>% na.omit() ->  .Q16
+names(.Q16) <- c("Sex","Age","Q16a","Q16b","Q16c")
+summary(.Q16)
+```
+
+```{r}
+.Q16$Age %>% hist(main="回答者の年齢分布")
+```
+```{r}
+.Q16 %>% mutate(Age10 = as.integer(Age/10)*10) -> .Q16a
+table(.Q16a$Age10,.Q16a$Sex) %>% mosaicplot(main="性別vs年齢")
+```
+
+
+
+# 【参考】わかりやすいrmarkdownを書くために！
+
+- tidyverse packageをload
+- パイプ処理 %>% を使う
+
+## baseの書き方 （）が入れ子になる
+
+```{r}
+.tbl1 <- matrix(c(481,80,500,119),byrow=TRUE,2,2)
+prop.table(.tbl1,margin = 1)
+prop.table(.tbl1,margin = 1) * 100
+round(prop.table(.tbl1,margin = 1) * 100, 0)
+```
+
+表もこんな風に書けます
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2)　-> .tbl1
+```
+
+一度に書くと...
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2) %>% prop.table(margin = 1) *100 %>% round(1)
+```
+
+## 表示桁を指示するroundがうまくいきません。パイプでうまくつなげない関数もあります。
+
+そういうときは、中間resultでつなぎます。（ここでは、.tmpとしてます）
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2) %>% prop.table(margin = 1) *100 -> .tmp
+round(.tmp,1)
+```
+
+## いろいろな書き方がありますが、一連の処理の流れはパイプで
+
+
+```{r}
+round(prop.table(matrix(c(481,80,500,119),byrow=TRUE,2,2),margin = 1) * 100, 0)
+```
+
+
+（）が入子になっていると、わかりにくいです。（）の対応も混乱する。
+
+パイプを使って書くと。処理の流れがわかりやすくなります。区切って実行することで、どこまであっているのか、を確かめることが可能になります。
+
+```{r}
+library(tidyverse)
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2) %>% chisq.test(correct = FALSE) -> res.chi
+res.chi$p.value
+res.chi$statistic
+res.chi$expected
+```
+
+
+# データフレームからクロス集計（Womnelfを使ってみます）
+
+```{r}
+library(car)
+data(Womenlf)
+```
+
+```{r}
+Womenlf %>% names()
+Womenlf %>% str()
+```
+
+```{r}
+table(Womenlf$partic,Womenlf$children) -> tbl.lf
+tbl.lf
+```
+
+```{r}
+chisq.test(tbl.lf)
+```
+
+```{r}
+mosaicplot(tbl.lf,shade = TRUE)
+```
+## 期待値をグラフでみると
+
+```{r}
+res.chi.lf <- chisq.test(tbl.lf)
+res.chi.lf$expected %>% mosaicplot(shade=TRUE)
+```
+
+# 参考文献
+

@@ -1,0 +1,56 @@
+---
+title: "Rmarkdown のテスト"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    number_sections: yes
+    toc: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Rmarkdown を使うとこのようなファイルをつくれます。
+
+# データを用意します。
+
+## 正規乱数でxに1000個
+
+```{r}
+N <- 1000
+x <- rnorm(N)
+```
+
+## 同じようにyにも1000個
+
+```{r}
+y <- rnorm(N)
+```
+
+# xとyが座標（x,y）を構成するものとして分布を確認します。
+
+```{r}
+hist(x, main="x の分布")
+hist(y, main="y の分布")
+```
+
+# このxとyをplotしてみます
+
+```{r}
+plot(x,y)
+```
+
+# 次に、生成する数（N）を変えてみます。
+
+- 10000とか10000000とか、逆に10とか変えてみましょう。
+
+```{r}
+N <- 10000
+x <- rnorm(N)
+y <- rnorm(N)
+plot(x,y)
+```
+

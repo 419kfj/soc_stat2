@@ -1,0 +1,214 @@
+---
+title: "pref.csv"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    css: ~/Dropbox/RStudio/mystyle.css
+    number_sections: yes
+    toc: TRUE
+bibliography: references.json
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+library(haven)
+library(expss)
+library(RcmdrMisc)
+library(corrplot)
+```
+
+# 1-3 基本的な考え方（3）偏相関係数
+
+[@2012]の1-3で用いられているpref.csvを用いて、偏相関係数による関連の分析について確認する。
+
+-   このデータは、以下から取得できる。<http://www.isc.senshu-u.ac.jp/~thh0808/asr/data.html>
+
+-   なお、ここにあるe-statのリンクはすでに変更されているので、「社会及び人口統計体系」から取得することになる。
+
+```{r}
+.d.csv <- read.csv("pref.csv",fileEncoding = "CP932")
+.d.csv
+```
+
+これの最新のデータは、<https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00200502&tstat=000001040313&cycle=0&tclass1=000001040314&tclass2=000001040315&tclass3val=0>
+
+から取得可能。did 都市度は、人口分布のExcelファイル（5−1−1.xls）の「人口集中地区人口比率」\#A01401 の最右列（2005）の値になっている。
+
+![](images/paste-9BE7E48A.png)
+
+## 参考までに、SPSSのsavデータを読み込んで、変数名、変数カテゴリを確認しておく。
+
+-   保育所数が、保育**序数**になってた。
+
+```{r}
+.d.sav <- read_sav("pref.sav")
+#.d.sav %>% expss::info()
+#.d.sav %>% expss::info() %>% names()
+.d.sav %>% expss::info() %>% select(Name, Label,Frequency)
+```
+
+# 読み込んだCSVファイルの確認
+
+## 変数名を確認
+
+```{r}
+.d.csv %>% names()
+plot(.d.csv[,c(3,4,5)])
+```
+
+## p54 「表1 出生率・保育所数・都市度の相関行列」
+
+```{r}
+cor(.d.csv[,c(3,4,5)])
+```
+
+## 偏相関係数
+
+偏相関については、[@2012]のほか、[@bohrnstedt1990]や[@2005]、[@2015]が詳しく論じている。
+
+これは、[@bohrnstedt1990]がベース。
+
+```{r}
+library(ppcor)
+```
+
+```{r}
+ppcor::pcor(.d.csv[,3:5])
+```
+
+```{r}
+partial.cor(.d.csv[,3:5])
+```
+
+```{r eval=FALSE}
+.d.csv
+```
+
+# テキストで扱った以外の組み合わせを検討してみる
+
+## 「五個の変数から３つを選ぶ」組み合わせの数、パターン
+
+-   選ぶ組み合わせはどのようにすれば取得できるか。
+-   <https://toukei.link/programmingandsoftware/r/combinationpermutation/>
+
+```{r}
+choose(5,3)
+```
+
+```{r}
+combn(x=c(1,2,3,4,5),m=3) %>% t() -> var_table
+```
+
+```{r}
+#i = 5
+for(i in 1:10){
+  .d.csv[,var_table[i,]+2] %>% cor -> cor1
+  .d.csv[,var_table[i,]+2] %>% ppcor::pcor() -> cor.tmp 
+  cor.tmp$estimate -> cor2
+  print(cor1)
+  print(cor2)
+  print(cor1/cor2)
+  cat("-------------------------------------------\n")
+}
+
+```
+
+# pref.csvデータでPCAをやってみる
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(showtext)
+showtext_auto(TRUE)
+```
+
+```{r}
+.d.csv %>% column_to_rownames("pref") %>% dplyr::select(-1) -> pref.data
+summary(pref.data)
+summary(scale(pref.data))
+pref.data %>% PCA -> res.PCA
+```
+
+```{r fig.width=7}
+res.PCA %>% fviz_pca(repel=TRUE) + coord_fixed(ratio = 1)
+```
+
+```{r}
+fviz_pca_var(res.PCA)
+```
+
+```{r}
+res.PCA %>% summary
+res.PCA$var$cor
+```
+
+```{r}
+res.PCA$var$coord -> res.coord
+```
+
+## tfr と nursery の相関係数
+
+```{r}
+res.coord[1,] %*% res.coord[2,]
+```
+
+## では、didで統制した偏相関係数はどうなるのか
+
+-   参考にできそうな論考。<https://kyozai-db.fz.ocha.ac.jp/downloadpdfdisp/556>
+
+```{r}
+tfr <- res.coord[1,]
+nursery <- res.coord[2,]
+did <- res.coord[3,]
+
+did_tfr <- (t(tfr)%*%did /sum(did ^ 2)) * did # tfr のdidベクトルへの正射影
+did_nur <- (t(nursery)%*%did /sum(did ^ 2)) * did # nursey のdidベクトルへの正射影
+
+t(tfr - did_tfr) %*% (nursery - did_nur) / 
+  (sqrt(sum((tfr - did_tfr)^2)) * sqrt(sum((nursery - did_nur)^2)))
+```
+
+```{r}
+#explor::explor(res.PCA)
+```
+
+```{r}
+a <- c(1,sqrt(3))
+b <- c(1,0)
+t(a) %*% b
+acos(0.5)
+pi/2
+```
+
+```{r}
+acos(t(c(1,0)) %*% c(0,1)) -> rad
+rad * 180/pi
+cos(rad)
+```
+# 相関係数をcorrplotで図示する
+
+```{r}
+.d.csv[,-c(1,2)] %>% cor() %>% corrplot(type = "lower")
+```
+
+## 偏相関係数 これだとなにで統制しているのだろうか....。
+
+```{r}
+.d.csv[,-c(1,2)] %>% partial.cor() ->parcor
+parcor$R %>% corrplot(type = "lower")
+```
+
+```{r}
+.d.csv[,-c(1,2)] %>% pcor() ->parcor
+parcor
+parcor$estimate %>% corrplot(type = "lower")
+```
+
+
+# 参考文献

@@ -1,0 +1,15 @@
+---
+title: "readの確認"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "10/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+read.csv("Q16ABC_webClass.csv")
+```
+

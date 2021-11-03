@@ -1,0 +1,108 @@
+---
+title: "多重クロス第10章"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    css: ~/Dropbox/RStudio/mystyle.css
+    number_sections: yes
+    toc: TRUE
+bibliography: references.json
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Package Load
+
+```{r message=FALSE}
+library(tidyverse)
+library(vcdExtra)
+library(showtext)
+showtext_auto(TRUE)
+```
+
+# 表10.2 第３変数に効果がない例（仮想データ）p287
+
+```{r}
+expand.grid(婚前性交=c("ある","ない"),信仰=c("深い","浅い"),自動車=c("ある","ない")) %>% 
+  mutate(Freq = c(5,26,11,18,11,58,25,38)) %>% vcdExtra::expand.dft() -> data10.2
+```
+
+```{r}
+names(data10.2)
+with(data10.2,table(婚前性交,信仰))
+with(data10.2,table(婚前性交,信仰,自動車))
+```
+```{r}
+assocstats(with(data10.2,table(婚前性交,信仰)))
+```
+
+
+
+```{r}
+mosaic(with(data10.2,table(自動車,信仰,婚前性交)),shade = TRUE,main = "表10.2")
+```
+
+# 表10.3 第３変数に部分的効果がある例（仮想データ）p289
+
+```{r}
+expand.grid(婚前性交=c("ある","ない"),信仰=c("深い","浅い"),自動車=c("ある","ない")) %>% 
+  mutate(Freq = c(5,10,24,21,11,74,12,35)) %>% vcdExtra::expand.dft() -> data10.3
+```
+
+```{r}
+names(data10.3)
+with(data10.3,table(婚前性交,信仰)) # これはみな同じ
+with(data10.3,table(婚前性交,信仰,自動車))
+```
+
+```{r}
+mosaic(with(data10.3,table(自動車,信仰,婚前性交)),shade = TRUE,main = "表10.3")
+```
+
+# 表10.4 第３変数による完全な説明の例（仮想データ）p290
+
+```{r}
+expand.grid(婚前性交=c("ある","ない"),信仰=c("深い","浅い"),自動車=c("ある","ない")) %>% 
+  mutate(Freq = c(8,4,32,16,8,80,4,40)) %>% vcdExtra::expand.dft() -> data10.4
+```
+
+```{r}
+names(data10.4)
+with(data10.4,table(婚前性交,信仰)) # これはみな同じ
+with(data10.4,table(婚前性交,信仰,自動車))
+```
+
+```{r}
+mosaic(with(data10.4,table(自動車,信仰,婚前性交)),shade = TRUE,main = "表10.4")
+```
+
+# 表10.5 第３変数に交互作用ある例（仮想データ）p292
+
+```{r}
+expand.grid(婚前性交=c("ある","ない"),信仰=c("深い","浅い"),自動車=c("ある","ない")) %>% 
+  mutate(Freq = c(8,24,10,30,8,60,26,26)) %>% vcdExtra::expand.dft() -> data10.5
+```
+
+```{r}
+names(data10.5)
+with(data10.5,table(婚前性交,信仰)) # これはみな同じ
+with(data10.5,table(婚前性交,信仰,自動車))
+```
+
+```{r}
+mosaic(with(data10.5,table(自動車,信仰,婚前性交)),shade = TRUE,main = "表10.5")
+```
+
+# 参考文献
+
+-   Bohrnstedt, George W, David Knoke, 海野道郎・中村隆. 1990. 社会統計学: 社会調查のためのデータ分析入門学生版.
+
+-   Friendly, M., とD. Meyer. 2015. *Discrete Data Analysis with R: Visualization and Modeling Techniques for Categorical and Count Data*. CRC Press. <https://books.google.com/books?id=5Ts0CwAAQBAJ>.
+
+-   <https://cran.ism.ac.jp/web/packages/vcdExtra/vignettes/vcd-tutorial.pdf>
+
+-   Meyer, David, Achim ZeileisとKurt Hornik. 2006. 「The Strucplot Framework: Visualizing Multi-Way Contingency Tables with **Vcd**」. *Journal of Statistical Software* 17 (3). <https://doi.org/10.18637/jss.v017.i03>.
