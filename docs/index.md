@@ -16,3 +16,5 @@
 - [教科書のサポートページ](http://www.isc.senshu-u.ac.jp/~thh0808/asr/)
 - [CRAN The Comprehensive R Archive Network](https://cran.r-project.org/)
 - [RStudio](https://www.rstudio.com/products/rstudio/) 
+- [RStudio Cloud](https://rstudio.cloud/)
+
