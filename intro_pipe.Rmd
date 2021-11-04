@@ -1,0 +1,79 @@
+---
+title: "【参考】わかりやすいrmarkdownを書くために！"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    css: ~/Dropbox/RStudio/mystyle.css
+    number_sections: yes
+    toc: TRUE
+bibliography: references.json
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# パイプ処理
+
+-   tidyverse packageをload
+-   パイプ処理 %\>% を使う
+
+より詳しくは、[@wickham2017]や[@2018b]を参照してください。
+
+```{r}
+library(tidyverse)
+```
+
+## baseの書き方 （）が入れ子になる
+
+```{r}
+.tbl1 <- matrix(c(481,80,500,119),byrow=TRUE,2,2)
+prop.table(.tbl1,margin = 1)
+prop.table(.tbl1,margin = 1) * 100
+round(prop.table(.tbl1,margin = 1) * 100, 0)
+```
+
+表もこんな風に書けます
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2)　-> .tbl1
+```
+
+一度に書くと...
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2) %>% prop.table(margin = 1) *100 %>% round(1)
+```
+
+## 表示桁を指示するroundがうまくいきません。パイプでうまくつなげない関数もあります。
+
+そういうときは、中間resultでつなぎます。（ここでは、.tmpとしてます）
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2) %>% prop.table(margin = 1) *100 -> .tmp
+round(.tmp,1)
+```
+
+## いろいろな書き方がありますが、一連の処理の流れはパイプで
+
+```{r}
+round(prop.table(matrix(c(481,80,500,119),byrow=TRUE,2,2),margin = 1) * 100, 0)
+```
+
+（）が入子になっていると、わかりにくいです。（）の対応も混乱する。
+
+パイプを使って書くと。処理の流れがわかりやすくなります。区切って実行することで、どこまであっているのか、を確かめることが可能になります。
+
+```{r}
+c(481,80,500,119) %>% matrix(byrow=TRUE,2,2) %>% chisq.test(correct = FALSE) -> res.chi
+```
+
+```{r}
+res.chi$p.value
+res.chi$statistic
+res.chi$expected
+```
+
+# 参考文献

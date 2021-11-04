@@ -1,0 +1,35 @@
+---
+title: "Q16ABCデータ整形"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    css: ~/Dropbox/RStudio/mystyle.css
+    number_sections: yes
+    toc: TRUE
+bibliography: references.json
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+```
+
+
+```{r}
+.Q16_0 <- read.csv("Q16ABC.csv",fileEncoding = "UTF-8-BOM",
+                   colClasses = c("factor","numeric","factor","factor","factor"))
+
+.Q16_0  %>% na.omit() ->  .Q16
+names(.Q16) <- c("Sex","Age","Q16a","Q16b","Q16c")
+summary(.Q16)
+```
+
+```{r}
+save(.Q16,file = "Q16ABC.rda")
+```
+

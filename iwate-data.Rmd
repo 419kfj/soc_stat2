@@ -1,0 +1,153 @@
+---
+title: "岩手（iwate）データ整形"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    css: ~/Dropbox/RStudio/mystyle.css
+    number_sections: yes
+    toc: TRUE
+bibliography: references.json
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 概要
+
+このスクリプトは、[@2012a]で例題に用いられている岩手調査のデータを、調整するものである。
+
+# Package load
+
+```{r message=FALSE}
+library(tidyverse)
+library(haven)
+library(expss)
+```
+
+# データ取得
+
+-   岩手調査の調査票はここから取得：<https://ruda.rikkyo.ac.jp/dspace/bitstream/handle/10577/138/ruda0010-questionnaire.pdf?sequence=11>
+
+## iwate.rda
+
+-   <http://www.isc.senshu-u.ac.jp/~thh0808/asr/data/iwate.rda>
+-   ここからダウンロードしてプロジェクト・フォルダにコピーしておく
+
+```{r}
+load("iwate.rda") # Data set名は iwate, encodingはcp932
+```
+
+## utf-8に変換し、iwate_utf8とする
+
+```{r}
+iwate %>% mutate(PREF= iconv(PREF,from = "cp932", to = "utf8"),
+                 CITY = iconv(CITY,from = "cp932", to = "utf8"),
+                 edu_high = iconv(edu_high,from = "cp932", to = "utf8"),
+                 urban=iconv(urban,from = "cp932", to = "utf8"),
+                 q7_d = iconv(q7_d,from = "cp932", to = "utf8"),
+                 q8a_d = iconv(q8a_d,from = "cp932", to = "utf8"),
+                 q8b_d = iconv(q8b_d,from = "cp932", to = "utf8"),
+                 q8c_d = iconv(q8c_d,from = "cp932", to = "utf8"),
+                 q8d_d = iconv(q8d_d,from = "cp932", to = "utf8"),
+                 q8e_d = iconv(q8e_d,from = "cp932", to = "utf8"),
+                 q8f_d = iconv(q8f_d,from = "cp932", to = "utf8"),
+                 q8g_d = iconv(q8g_d,from = "cp932", to = "utf8"),
+                 q12a_d = iconv(q12a_d,from = "cp932", to = "utf8"),
+                 q12b_d = iconv(q12b_d,from = "cp932", to = "utf8"),
+                 q12c_d = iconv(q12c_d,from = "cp932", to = "utf8"),
+                 q13a_d = iconv(q13a_d,from = "cp932", to = "utf8"),
+                 q13b_d = iconv(q13b_d,from = "cp932", to = "utf8"),
+                 q13c_d = iconv(q13c_d,from = "cp932", to = "utf8"),
+                 q14_d = iconv(q14_d,from = "cp932", to = "utf8"),
+                 q15a_d = iconv(q15a_d,from = "cp932", to = "utf8"),
+                 q15b_d = iconv(q15b_d,from = "cp932", to = "utf8"),
+                 q15c_d = iconv(q15c_d,from = "cp932", to = "utf8"),
+                 q15d_d = iconv(q15d_d,from = "cp932", to = "utf8"),
+                 q16a_d = iconv(q16a_d,from = "cp932", to = "utf8"),
+                 q16b_d = iconv(q16b_d,from = "cp932", to = "utf8"),
+                 q17a_d = iconv(q17a_d,from = "cp932", to = "utf8"),
+                 q17b_d = iconv(q17b_d,from = "cp932", to = "utf8"),
+                 q17c_d = iconv(q17c_d,from = "cp932", to = "utf8"),
+                 q17d_d = iconv(q17d_d,from = "cp932", to = "utf8"),
+                 q17e_d = iconv(q17e_d,from = "cp932", to = "utf8"),
+                 q17f_d = iconv(q17f_d,from = "cp932", to = "utf8"),
+                 q17g_d = iconv(q17g_d,from = "cp932", to = "utf8"),
+                 q19a_d = iconv(q19a_d,from = "cp932", to = "utf8"),
+                 q19b_d = iconv(q19b_d,from = "cp932", to = "utf8"),
+                 q19c_d = iconv(q19c_d,from = "cp932", to = "utf8"),
+                 q19d_d = iconv(q19d_d,from = "cp932", to = "utf8"),
+                 q19e_d = iconv(q19e_d,from = "cp932", to = "utf8"),
+                 q20a_d = iconv(q20a_d,from = "cp932", to = "utf8"),
+                 q20b_d = iconv(q20b_d,from = "cp932", to = "utf8"),
+                 q20c_d = iconv(q20c_d,from = "cp932", to = "utf8"),
+                 q20d_d = iconv(q20d_d,from = "cp932", to = "utf8"),
+                 q20e_d = iconv(q20e_d,from = "cp932", to = "utf8"),
+                 q21a_d = iconv(q21a_d,from = "cp932", to = "utf8"),
+                 q21b_d = iconv(q21b_d,from = "cp932", to = "utf8"),
+                 q21c_d = iconv(q21c_d,from = "cp932", to = "utf8"),
+                 q21d_d = iconv(q21d_d,from = "cp932", to = "utf8"),
+                 q21e_d = iconv(q21e_d,from = "cp932", to = "utf8"),
+                 q22a_d = iconv(q22a_d,from = "cp932", to = "utf8"),
+                 q22b_d = iconv(q22b_d,from = "cp932", to = "utf8"),
+                 q22c_d = iconv(q22c_d,from = "cp932", to = "utf8"),
+                 q22d_d = iconv(q22d_d,from = "cp932", to = "utf8"),
+                 q23a_d = iconv(q23a_d,from = "cp932", to = "utf8"),
+                 q23b_d = iconv(q23b_d,from = "cp932", to = "utf8"),
+                 q23c_d = iconv(q23c_d,from = "cp932", to = "utf8"),
+                 q23d_d = iconv(q23d_d,from = "cp932", to = "utf8"),
+                 q23e_d = iconv(q23e_d,from = "cp932", to = "utf8"),
+                 q23f_d = iconv(q23f_d,from = "cp932", to = "utf8"),
+                 q24a_d = iconv(q24a_d,from = "cp932", to = "utf8"),
+                 q24b_d = iconv(q24b_d,from = "cp932", to = "utf8"),
+                 q25a_d = iconv(q25a_d,from = "cp932", to = "utf8"),
+                 q25b_d = iconv(q25b_d,from = "cp932", to = "utf8"),
+                 q25c_d = iconv(q25c_d,from = "cp932", to = "utf8"),
+                 q25d_d = iconv(q25d_d,from = "cp932", to = "utf8"),
+                 q25e_d = iconv(q25e_d,from = "cp932", to = "utf8"),
+                 q26a_d = iconv(q26a_d,from = "cp932", to = "utf8"),
+                 q26b_d = iconv(q26b_d,from = "cp932", to = "utf8"),
+                 q26c_d = iconv(q26c_d,from = "cp932", to = "utf8"),
+                 q26d_d = iconv(q26d_d,from = "cp932", to = "utf8"),
+                 q26e_d = iconv(q26e_d,from = "cp932", to = "utf8"),
+                 q26f_d = iconv(q26f_d,from = "cp932", to = "utf8"),
+                 q27a_d = iconv(q27a_d,from = "cp932", to = "utf8"),
+                 q27b_d = iconv(q27b_d,from = "cp932", to = "utf8"),
+                 q27c_d = iconv(q27c_d,from = "cp932", to = "utf8"),
+                 q27d_d = iconv(q27d_d,from = "cp932", to = "utf8"),
+                 q27e_d = iconv(q27e_d,from = "cp932", to = "utf8"),
+                 q27f_d = iconv(q27f_d,from = "cp932", to = "utf8"),
+                 q27g_d = iconv(q27g_d,from = "cp932", to = "utf8"),
+                 q32a_d = iconv(q32a_d,from = "cp932", to = "utf8"),
+                 q32b_d = iconv(q32b_d,from = "cp932", to = "utf8"),
+                 q32c_d = iconv(q32c_d,from = "cp932", to = "utf8"),
+                 q42_4 = iconv(q42_4,from = "cp932", to = "utf8"),
+                 age_d = iconv(age_d,from = "cp932", to = "utf8"),
+                 q31s1_d = iconv(q31s1_d,from = "cp932", to = "utf8"),
+                 male = iconv(male,from = "cp932", to = "utf8"),
+                 education_c = iconv(education_c,from = "cp932", to = "utf8"),
+                ) -> iwate_utf8
+iwate_utf8 %>% tibble
+#save(iwate_utf8,file="iwate-utf8.rda")
+
+
+# よりシンンプルにかけないか
+# iwate %>% mutate_at(.tbl = "PREF",.funs = iconv(from="cp932",to="utf8")) これダメ
+```
+
+```{r}
+names(iwate_utf8)
+```
+
+## SPSSのsavを読み込み、「変数の説明」を確認する
+
+```{r}
+.dspss <- read_sav("ruda-data.sav")
+#expss::info(.dspss) 
+```
+
+```{r}
+expss::info(.dspss) %>% select(Name,Label,ValueLabels,Frequency) %>% knitr::kable()
+```
