@@ -1,0 +1,190 @@
+---
+title: "第7回 表を操作する（その２）"
+subtitle: "`r knitr::current_input(dir=TRUE)`"
+author: "kazuo.fujimoto2007@gmail.com"
+date: "`r system('Date',intern=T)`"
+output: 
+  html_document: 
+    number_sections: yes
+    toc: TRUE
+bibliography: references.json
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+# 表を操作する（再掲）
+
+## クロス表をスクリプトの中でつくります。
+
+```{r}
+.tbl1 <- matrix(c(481,80,500,119),byrow=TRUE,2,2)
+.tbl1
+```
+
+```{r}
+dimnames(.tbl1) <- list(性別=c("男性","女性"),愛着=c("感じる","感じない"))
+.tbl1
+```
+
+## 周辺度数を求めます（addmargins）
+
+-   margin = 1 は列周辺度数 \<- 訂正
+-   margin = 2 は行周辺度数 \<- 訂正 marginの１、と２、定義が違う場合があります！
+-   margin 指示なしは？
+-   詳しくは、Helpでみましょう。
+
+```{r}
+addmargins(.tbl1,margin = 1) # 列周辺度数
+addmargins(.tbl1,margin = 2) # 行周辺度数
+addmargins(.tbl1)
+```
+
+## 行％を求めます（prop.table()）
+
+```{r}
+prop.table(.tbl1,margin = 1)
+prop.table(.tbl1,margin = 1) * 100
+round(prop.table(.tbl1,margin = 1) * 100, 0)
+```
+
+## カイ二乗値をもとめましょう
+
+帰無仮説、かけますか？（調査仮説/対立仮説も）
+
+```{r}
+.tbl1 # 確認！
+chisq.test(.tbl1) # デフォルトでは、「イエーツの補正」がTRUE
+chisq.test(.tbl1,correct = FALSE) # それをOFFに。教科書の値はこれ。
+```
+
+## chisq.testのresult（結果）を詳しくみます
+
+```{r}
+res.chi <- chisq.test(.tbl1,correct = FALSE)
+str(res.chi)　# str:structure res.chiというオブジェクトの構造をみます。
+```
+
+## 期待値も簡単に！取得できます。
+
+-   result res.chisqのなかのexpectedを参照するには、\$でつなぎます。
+
+```{r}
+res.chi$expected
+```
+
+## 観測度数 - 期待度数 をつかってカイ二乗値を手計算。
+
+-   Rは、ベクトル、行列単位での計算ができるので、以下のようにするとセル単位の操作ができます。（セルごとにチマチマやらなくてもいい...。でも、一度は手計算でやっておいてください。）
+
+```{r}
+.tbl1 - res.chi$expected　# 観測値 - 期待値
+
+(.tbl1 - res.chi$expected) ^2 / res.chi$expected # （観測値-期待値）^2 /期待値　--- セルχ二乗値
+
+sum((.tbl1 - res.chi$expected) ^2 / res.chi$expected) #  セルχ２乗値を合計して、表のχ２乗値となる。
+```
+
+こうやってもとめたχ２乗値と、chisq.text で求めた値を比較しましょう。
+
+# 他の関連係数
+
+## クラメールのV
+
+まず、定義から。前期のテキスト[@2018a]のp79。
+
+```{r}
+sqrt(res.chi$statistic/sum(.tbl1)*(2-1))
+```
+
+## package vcd に関連指数を一度にだす関数がある
+
+- vcdは、インストールしてありますか？
+
+```{r}
+library(vcd)
+```
+
+```{r}
+assocstats(.tbl1)
+```
+
+```{r}
+res.assoc <- assocstats(.tbl1)
+
+str(res.assoc)
+```
+
+```{r}
+res.assoc$cramer
+```
+
+## odds 比 （oddの比）
+
+```{r}
+oddsratio(.tbl1)
+oddsratio(.tbl1,log=FALSE) # 対数表示をOFF
+```
+
+# CSVを読み込んで、dataframeにする【前回うまくいかなったのでファイルを作り直しました】
+
+```{r}
+.Q16_0 <- read.csv("Q16ABC.csv",
+                   colClasses = c("factor","numeric","factor","factor","factor"),fileEncoding = "UTF-8-BOM")
+
+.Q16_0  %>% na.omit() ->  .Q16
+names(.Q16) <- c("Sex","Age","Q16a","Q16b","Q16c")
+summary(.Q16)
+```
+
+```{r}
+.Q16$Age %>% hist(main="回答者の年齢分布")
+```
+
+```{r}
+.Q16 %>% mutate(Age10 = as.integer(Age/10)*10) -> .Q16a
+table(.Q16a$Age10,.Q16a$Sex) %>% mosaicplot(main="性別vs年齢",color=TRUE)
+```
+
+# データフレームからクロス集計（Womnelfを使ってみます）
+
+packageには、そのpackageで提供されるfunctionで処理するためのサンプルデータがついています。
+どのようなデータを使えるかは、コンソール（Console）で｀data()｀とたたくと、使えるデータセットが表示されます。そのデータセットの説明は、Helpで読むことができます。英語ですが...。
+
+
+```{r}
+library(car)
+data(Womenlf)
+```
+
+```{r}
+Womenlf %>% names()
+Womenlf %>% str()
+```
+
+```{r}
+table(Womenlf$partic,Womenlf$children) -> tbl.lf
+tbl.lf
+```
+
+```{r}
+chisq.test(tbl.lf)
+```
+
+```{r}
+mosaicplot(tbl.lf,shade = TRUE)
+```
+
+## 期待値をグラフでみると
+
+```{r}
+res.chi.lf <- chisq.test(tbl.lf)
+res.chi.lf$expected %>% mosaicplot(shade=TRUE)
+```
+
+# 参考文献
