@@ -1,11 +1,16 @@
 ---
 title: "load test"
 output: html_document
+bibliography: references.json
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# 概要
+
+ここに、参考文献を入れてみる。[@2012] これが教科書。[@wickham2017]
 
 ## R Markdown
 
@@ -26,3 +31,5 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# 参考文献
