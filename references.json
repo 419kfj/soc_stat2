@@ -1,0 +1,74 @@
+[
+    {
+        "ISBN": "978-4-87311-814-7",
+        "URL": "https://learning.oreilly.com/library/view/-/9784873118147/?ar",
+        "accessed": {
+            "date-parts": [
+                [
+                    2021,
+                    5,
+                    13
+                ]
+            ]
+        },
+        "author": [
+            {
+                "family": "Wickham",
+                "given": "Hadley"
+            },
+            {
+                "family": "Grolemund",
+                "given": "Garrett"
+            }
+        ],
+        "id": "wickham2017",
+        "issued": {
+            "date-parts": [
+                [
+                    2017
+                ]
+            ]
+        },
+        "language": "English",
+        "libraryid": "",
+        "oclc": "1227410187",
+        "providerkey": "2509FBBE-5BB0-44C4-B119-6083A81ED673",
+        "title": "Rではじめるデータサイエンス",
+        "type": "book"
+    },
+    {
+        "ISBN": "978-4-335-55151-2",
+        "author": [
+            {
+                "family": "金井雅之",
+                "given": ""
+            },
+            {
+                "family": "小林盾",
+                "given": ""
+            },
+            {
+                "family": "渡邉大輔",
+                "given": ""
+            }
+        ],
+        "container-title-short": "社会調查の応用",
+        "event-place": "東京",
+        "id": "2012",
+        "issued": {
+            "date-parts": [
+                [
+                    2012
+                ]
+            ]
+        },
+        "language": "Japanese",
+        "libraryid": "",
+        "oclc": "774273701",
+        "providerkey": "2509FBBE-5BB0-44C4-B119-6083A81ED673",
+        "publisher": "弘文堂",
+        "publisher-place": "東京",
+        "title": "社会調查の応用: 量的調查編:社会調查士E・G科目対応",
+        "type": "book"
+    }
+]
