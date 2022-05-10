@@ -14,32 +14,67 @@ library(tidyverse)
 library(DataExplorer)
 ```
 
+# データの読み込み
+
 ```{r}
 load("Q16ABC.rda")
 ```
 
+#summaryを出力
+
 ```{r}
 summary(.Q16)
 ```
+# intruduce  で概要を把握
+
 ```{r}
 introduce(.Q16)
 ```
 
+
+```{r fig.width=5}
+introduce(.Q16) %>% as.matrix %>% t() %>% knitr::kable()
+```
+
+# missing  データの確認（本データでは9でコーディングされている）
+
 ```{r}
 plot_missing(.Q16)
 ```
+```{r eval=FALSE}
+.Q16 %>% mutate_all(.funs = recode("NA","9"))
+```
 
+# 連続変数をヒストグラム
+
+```{r}
+.Q16 %>% DataExplorer::plot_histogram()
+```
+
+
+
+# カテゴリカル変数を棒グラフ表示
 
 ```{r}
 .Q16 %>% DataExplorer::plot_bar()
 ```
+
+# カテゴリカル変数を性別で区分。積み上げ棒グラフ
+
 ```{r}
+library(RColorBrewer)
 .Q16 %>% DataExplorer::plot_bar(by="Sex",by_position = "fill")
 ```
+
+# 棒グラフで、性別よこならび棒グラフ：度数の順にならべている
 
 ```{r}
 .Q16 %>% DataExplorer::plot_bar(by="Sex",by_position = "dodge")
 ```
+
+# 棒グラフで、性別よこならび棒グラフ：回答選択肢順/9は無効
+
+
 ```{r}
 .Q16 %>% DataExplorer::plot_bar(by="Sex",order_bar = FALSE,by_position = "dodge")
 ```
