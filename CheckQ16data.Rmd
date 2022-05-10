@@ -1,0 +1,45 @@
+---
+title: "CheckQ16data.Rmd"
+author: "fujimoto"
+date: '2022-05-10'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(DataExplorer)
+```
+
+```{r}
+load("Q16ABC.rda")
+```
+
+```{r}
+summary(.Q16)
+```
+```{r}
+introduce(.Q16)
+```
+
+```{r}
+plot_missing(.Q16)
+```
+
+
+```{r}
+.Q16 %>% DataExplorer::plot_bar()
+```
+```{r}
+.Q16 %>% DataExplorer::plot_bar(by="Sex",by_position = "fill")
+```
+
+```{r}
+.Q16 %>% DataExplorer::plot_bar(by="Sex",by_position = "dodge")
+```
+```{r}
+.Q16 %>% DataExplorer::plot_bar(by="Sex",order_bar = FALSE,by_position = "dodge")
+```
